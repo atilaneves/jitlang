@@ -56,21 +56,19 @@ final class JITCompiler: imported!"jitlang.ast".ASTVisitor {
         stackPop(DEM_JIT_R0); // Pop left operand
         stackPop(DEM_JIT_R1); // Pop right operand
 
-        switch (expr.op) {
-        case BinaryExpression.Op.Add:
-            dem_jit_addr(DEM_JIT_R0, DEM_JIT_R0, DEM_JIT_R1);
-            break;
-        case BinaryExpression.Op.Sub:
-            dem_jit_subr(DEM_JIT_R0, DEM_JIT_R0, DEM_JIT_R1);
-            break;
-        case BinaryExpression.Op.Mul:
-            dem_jit_mulr(DEM_JIT_R0, DEM_JIT_R0, DEM_JIT_R1);
-            break;
-        case BinaryExpression.Op.Div:
-            dem_jit_divr(DEM_JIT_R0, DEM_JIT_R0, DEM_JIT_R1);
-            break;
-        default:
-            throw new Exception("Unsupported binary operation");
+        final switch (expr.op) {
+            case BinaryExpression.Op.Add:
+                dem_jit_addr(DEM_JIT_R0, DEM_JIT_R0, DEM_JIT_R1);
+                break;
+            case BinaryExpression.Op.Sub:
+                dem_jit_subr(DEM_JIT_R0, DEM_JIT_R0, DEM_JIT_R1);
+                break;
+            case BinaryExpression.Op.Mul:
+                dem_jit_mulr(DEM_JIT_R0, DEM_JIT_R0, DEM_JIT_R1);
+                break;
+            case BinaryExpression.Op.Div:
+                dem_jit_divr(DEM_JIT_R0, DEM_JIT_R0, DEM_JIT_R1);
+                break;
         }
         stackPush(DEM_JIT_R0); // Push result back onto stack
     }
