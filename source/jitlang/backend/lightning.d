@@ -5,7 +5,7 @@ import lightning;
 
 alias CalcFunc = extern (C) int function();
 
-final class JITCompiler {
+final class JITCompiler: imported!"jitlang.ast".ASTVisitor {
 
     import jitlang.ast;
 
@@ -30,7 +30,7 @@ final class JITCompiler {
         // Initialize the stack pointer offset
         stackPtr = _jit_allocai(_jit, 32 * int.sizeof);
 
-        emitAST(root);
+        root.accept(this);
 
         // Move the result from the stack to the return register
         stackPop(DEM_JIT_R0);
@@ -42,6 +42,37 @@ final class JITCompiler {
         enforce(funcPtr !is null, "JIT compilation failed.");
 
         return cast(CalcFunc) funcPtr;
+    }
+
+    void visit(in Literal lit) {
+        dem_jit_movi(DEM_JIT_R0, lit.value);
+        stackPush(DEM_JIT_R0);
+    }
+
+    void visit(in BinaryExpression expr) {
+        expr.right.accept(this);
+        expr.left.accept(this);
+
+        stackPop(DEM_JIT_R1); // Pop left operand
+        stackPop(DEM_JIT_R0); // Pop right operand, now R0 has the left operand, R1 has the right operand
+
+        switch (expr.op) {
+        case BinaryExpression.Op.Add:
+            dem_jit_addr(DEM_JIT_R0, DEM_JIT_R0, DEM_JIT_R1);
+            break;
+        case BinaryExpression.Op.Sub:
+            dem_jit_subr(DEM_JIT_R0, DEM_JIT_R0, DEM_JIT_R1);
+            break;
+        case BinaryExpression.Op.Mul:
+            dem_jit_mulr(DEM_JIT_R0, DEM_JIT_R0, DEM_JIT_R1);
+            break;
+        case BinaryExpression.Op.Div:
+            dem_jit_divr(DEM_JIT_R0, DEM_JIT_R0, DEM_JIT_R1);
+            break;
+        default:
+            throw new Exception("Unsupported binary operation");
+        }
+        stackPush(DEM_JIT_R0); // Push result back onto stack
     }
 
 private:
