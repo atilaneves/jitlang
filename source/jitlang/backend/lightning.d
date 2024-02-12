@@ -5,7 +5,7 @@ import lightning;
 
 alias CalcFunc = extern (C) int function();
 
-class JITCompiler {
+final class JITCompiler {
 
     import jitlang.ast;
 
