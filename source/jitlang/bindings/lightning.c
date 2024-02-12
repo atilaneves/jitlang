@@ -36,3 +36,11 @@ int dem_jit_stxi_i(int u, int v, int w) {
 int dem_jit_ldxi_i(int u, int v, int w) {
     return jit_ldxi_i(u, v, w);
 }
+
+int dem_jit_lshr(int u, int v, int w) {
+    return jit_lshr(u, v, w);
+}
+
+int dem_jit_rshr(int u, int v, int w) {
+    return jit_rshr(u, v, w);
+}

@@ -31,7 +31,14 @@ class Literal : ASTNode {
 }
 
 class BinaryExpression : ASTNode {
-    enum Op { Add, Sub, Mul, Div }
+    enum Op {
+        Add,
+        Sub,
+        Mul,
+        Div,
+        ShiftLeft,
+        ShiftRight,
+    }
 
     Op op;
     ASTNode left;

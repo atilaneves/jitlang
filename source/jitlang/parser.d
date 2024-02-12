@@ -53,18 +53,28 @@ private:
             skipWhitespace();
             if (pos >= input.length) break;
 
-            char op = input[pos];
-            if (op != '*' && op != '/') break;
+            if (lookAhead("<<")) {
+                pos += 2; // Advance past the '<<'
+                auto right = parseFactor();
+                left = new BinaryExpression(BinaryExpression.Op.ShiftLeft, left, right);
+            } else if (lookAhead(">>")) {
+                pos += 2; // Advance past the '<<'
+                auto right = parseFactor();
+                left = new BinaryExpression(BinaryExpression.Op.ShiftRight, left, right);
 
-            pos++;
-            auto right = parseFactor();
-            left = new BinaryExpression(op == '*' ? BinaryExpression.Op.Mul : BinaryExpression.Op.Div, left, right);
+            } else {
+                char op = input[pos];
+                if (op != '*' && op != '/') break;
+
+                pos++;
+                auto right = parseFactor();
+                left = new BinaryExpression(op == '*' ? BinaryExpression.Op.Mul : BinaryExpression.Op.Div, left, right);
+            }
         }
         return left;
     }
 
     ASTNode parseFactor() {
-
         import jitlang.ast: Literal;
 
         skipWhitespace();
@@ -95,5 +105,9 @@ private:
 
     bool isWhitespace(char c) {
         return c == ' ' || c == '\t' || c == '\n' || c == '\r';
+    }
+
+    bool lookAhead(string s) {
+        return input[pos..$].startsWith(s);
     }
 }
