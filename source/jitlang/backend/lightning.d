@@ -53,8 +53,8 @@ final class JITCompiler: imported!"jitlang.ast".ASTVisitor {
         expr.right.accept(this);
         expr.left.accept(this);
 
-        stackPop(DEM_JIT_R1); // Pop left operand
-        stackPop(DEM_JIT_R0); // Pop right operand, now R0 has the left operand, R1 has the right operand
+        stackPop(DEM_JIT_R0); // Pop left operand
+        stackPop(DEM_JIT_R1); // Pop right operand
 
         switch (expr.op) {
         case BinaryExpression.Op.Add:
