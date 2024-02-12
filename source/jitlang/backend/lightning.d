@@ -23,7 +23,7 @@ class JITCompiler {
         lightning._jit = null;
     }
 
-    CalcFunc compile(ASTNode root) {
+    CalcFunc compile(in ASTNode root) {
         import std.exception: enforce;
 
         _jit_prolog(_jit);
@@ -45,7 +45,7 @@ class JITCompiler {
     }
 
 private:
-    void emitAST(ASTNode node) {
+    void emitAST(in ASTNode node) {
         import jitlang.ast: BinaryExpression, Literal;
 
         if (auto lit = cast(Literal)node) {
