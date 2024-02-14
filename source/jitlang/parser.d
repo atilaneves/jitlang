@@ -29,7 +29,6 @@ struct Parser {
             } else {
                 auto result = parseExpr();
                 skipWhitespace();
-                if (pos < input.length) throw new Exception("Unexpected characters at end of input");
                 nodes ~= result;
             }
         }
