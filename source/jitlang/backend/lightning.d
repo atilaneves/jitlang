@@ -3,8 +3,6 @@ module jitlang.backend.lightning;
 // apparently jitlang.bindings.lightning doesn't work
 import lightning;
 
-alias CalcFunc = extern (C) int function(int);
-
 final class JITCompiler: imported!"jitlang.ast".ASTVisitor {
 
     import jitlang.ast;
@@ -23,7 +21,7 @@ final class JITCompiler: imported!"jitlang.ast".ASTVisitor {
         lightning._jit = null;
     }
 
-    CalcFunc compile(in ASTNode root) {
+    void* compile(in ASTNode root) {
         import std.exception: enforce;
 
         _jit_prolog(_jit);
@@ -41,8 +39,9 @@ final class JITCompiler: imported!"jitlang.ast".ASTVisitor {
         void* funcPtr = _jit_emit(_jit);
         enforce(funcPtr !is null, "JIT compilation failed.");
 
-        return cast(CalcFunc) funcPtr;
+        return funcPtr;
     }
+
 
     void visit(in Literal lit) {
         dem_jit_movi(DEM_JIT_R0, lit.value);

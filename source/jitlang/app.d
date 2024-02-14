@@ -6,16 +6,47 @@ void run(string[] args) {
     import jitlang.backend.lightning;
     import std.stdio: writeln;
     import std.file: readText;
+    import std.datetime: Clock;
+
+    const startTime = Clock.currTime;
+
+    auto sinceStart() {
+        import std.datetime: Clock;
+        return (Clock.currTime - startTime).total!"msecs";
+    }
+
+    string secondsSinceStartString() {
+        import std.string: rightJustify;
+        import std.conv: to;
+        return ("+" ~ (sinceStart / 1000.0).to!string).rightJustify(8, ' ');
+    }
+
+    void log(T...)(auto ref T args) {
+        import std.functional: forward;
+        import std.stdio: stdout;
+        alias output = stdout;
+        output.writeln("[JIT]  ", secondsSinceStartString, "s  ", forward!args);
+        output.flush;
+    }
+
+    scope(exit)
+        log("Finished");
 
     if(args.length < 2)
         throw new Exception("Usage: jit filename");
 
     const fileName = args[1];
     const source = readText(fileName);
-    const nodes = Parser(source).parse;
+    log("Read source file");
 
+    const nodes = Parser(source).parse;
+    log("Parsed source file");
     nodes.writeln;
+
     auto compiler = new JITCompiler;
-    const fun = compiler.compile(nodes[0]); // FIXME
-    fun(4).writeln;
+    log("Compiling...");
+    const fun = cast(int function(int)) compiler.compile(nodes[0]); // FIXME
+    log("Compiled");
+
+    fun(3).writeln;
 }
