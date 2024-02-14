@@ -41,12 +41,12 @@ void run(string[] args) {
 
     const nodes = Parser(source).parse;
     log("Parsed source file");
-    nodes.writeln;
+    writeln("\n", nodes, "\n");
 
     auto compiler = new JITCompiler;
     log("Compiling...");
-    const fun = cast(int function(int)) compiler.compile(nodes[0]); // FIXME
+    const twice = cast(int function(int)) compiler.compile(nodes[0]); // FIXME
     log("Compiled");
 
-    fun(3).writeln;
+    writeln("\n", twice(3), "\n");
 }
