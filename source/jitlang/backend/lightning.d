@@ -21,16 +21,6 @@ final class JITCompiler: imported!"jitlang.ast".ASTVisitor {
         lightning._jit = null;
     }
 
-    void* compile(in ASTNode root) {
-        import std.exception: enforce;
-
-        root.accept(this);
-        void* funcPtr = _jit_emit(_jit);
-        enforce(funcPtr !is null, "JIT compilation failed.");
-
-        return funcPtr;
-    }
-
     void*[] compile(in ASTNode[] nodes) {
         import std.exception: enforce;
         import std.algorithm: map;
