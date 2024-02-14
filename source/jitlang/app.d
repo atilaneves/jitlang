@@ -45,8 +45,10 @@ void run(string[] args) {
 
     auto compiler = new JITCompiler;
     log("Compiling...");
-    const twice = cast(int function(int)) compiler.compile(nodes[0]); // FIXME
+    const symbols = compiler.compile(nodes);
     log("Compiled");
 
-    writeln("\n", twice(3), "\n");
+    const fun = cast(int function(int)) symbols[0];
+
+    writeln("\n", fun(2), "\n");
 }

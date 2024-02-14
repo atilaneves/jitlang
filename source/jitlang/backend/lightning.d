@@ -24,24 +24,35 @@ final class JITCompiler: imported!"jitlang.ast".ASTVisitor {
     void* compile(in ASTNode root) {
         import std.exception: enforce;
 
-        _jit_prolog(_jit);
-        // Initialize the stack pointer offset
-        stackPtr = _jit_allocai(_jit, 1024 * int.sizeof);
-
         root.accept(this);
-
-        // Move the result from the stack to the return register
-        stackPop(DEM_JIT_R0);
-
-        _jit_ret(_jit);
-        _jit_epilog(_jit);
-
         void* funcPtr = _jit_emit(_jit);
         enforce(funcPtr !is null, "JIT compilation failed.");
 
         return funcPtr;
     }
 
+    void*[] compile(in ASTNode[] nodes) {
+        import std.exception: enforce;
+        import std.algorithm: map;
+        import std.array: array;
+
+        jit_node_t*[] notes;
+
+        foreach(node; nodes) {
+            // mark the start of this node
+            notes ~= _jit_note(_jit, null, 0);
+            // generate the code
+            node.accept(this);
+        }
+
+        // emit all of the code
+        enforce(_jit_emit(_jit) !is null, "JIT compilation failed");
+
+        // convert to function pointer addresses
+        return notes
+            .map!(n => _jit_address(_jit, n))
+            .array;
+    }
 
     void visit(in Literal lit) {
         dem_jit_movi(DEM_JIT_R0, lit.value);
@@ -79,19 +90,16 @@ final class JITCompiler: imported!"jitlang.ast".ASTVisitor {
     }
 
     void visit(in Function func) {
-        // HACK: because the compile function was written with expressions in mind,
-        // it already does prolog/ret/epilog
-        //_jit_prolog(_jit); // This might not be directly applicable; adjust as needed for function context
+        _jit_prolog(_jit);
+        stackPtr = _jit_allocai(_jit, 1024 * int.sizeof);
 
-        // Compile the function body
         func.body.accept(this);
 
-        // Finalize the function compilation
-        // _jit_ret(_jit);
-        // _jit_epilog(_jit);
+        // Move the result from the stack to the return register
+        stackPop(DEM_JIT_R0);
 
-        // Example: Register the compiled function in a function table if needed
-        // This is highly dependent on your runtime's design
+        _jit_ret(_jit);
+        _jit_epilog(_jit);
     }
 
     void visit(in Identifier) {
