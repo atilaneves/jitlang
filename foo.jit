@@ -1,1 +1,2 @@
 fn twice(x) => x * 2
+fn thrice(y) => y * 3

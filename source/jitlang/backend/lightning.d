@@ -28,7 +28,7 @@ final class JITCompiler: imported!"jitlang.ast".ASTVisitor {
 
         _jit_prolog(_jit);
         // Initialize the stack pointer offset
-        stackPtr = _jit_allocai(_jit, 32 * int.sizeof);
+        stackPtr = _jit_allocai(_jit, 1024 * int.sizeof);
 
         root.accept(this);
 

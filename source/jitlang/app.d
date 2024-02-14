@@ -12,10 +12,10 @@ void run(string[] args) {
 
     const fileName = args[1];
     const source = readText(fileName);
-    const ast = Parser(source).parse;
+    const nodes = Parser(source).parse;
 
-    ast.writeln;
+    nodes.writeln;
     auto compiler = new JITCompiler;
-    const fun = compiler.compile(ast);
+    const fun = compiler.compile(nodes[0]); // FIXME
     fun(4).writeln;
 }

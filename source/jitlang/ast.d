@@ -79,7 +79,7 @@ class Function : ASTNode {
 
     override string toString() @safe pure scope const {
         import std.conv: text;
-        return text("Function(", parameters, ") => ", body);
+        return text("Function ", name, " (", parameters, ") => ", body);
     }
 }
 

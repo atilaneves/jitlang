@@ -18,26 +18,25 @@ struct Parser {
         this.pos = 0;
     }
 
-    ASTNode parse() {
-        skipWhitespace();
-        if (lookAhead("fn")) {
-            return parseFunction();
-        } else {
-            auto result = parseExpr();
+    ASTNode[] parse() {
+
+        ASTNode[] nodes;
+
+        while(pos < input.length) {
             skipWhitespace();
-            if (pos < input.length) throw new Exception("Unexpected characters at end of input");
-            return result;
+            if (lookAhead("fn")) {
+                nodes ~= parseFunction();
+            } else {
+                auto result = parseExpr();
+                skipWhitespace();
+                if (pos < input.length) throw new Exception("Unexpected characters at end of input");
+                nodes ~= result;
+            }
         }
+
+        return nodes;
     }
 
-    ASTNode parseOnlyExpressions() {
-        auto result = parseExpr();
-        skipWhitespace();
-        if (pos < input.length) throw new Exception("Unexpected characters at end of input");
-        return result;
-    }
-
-private:
 
     ASTNode parseFunction() {
         import jitlang.ast: Function, Identifier;
