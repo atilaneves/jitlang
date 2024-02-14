@@ -3,7 +3,7 @@ module jitlang.backend.lightning;
 // apparently jitlang.bindings.lightning doesn't work
 import lightning;
 
-alias CalcFunc = extern (C) int function();
+alias CalcFunc = extern (C) int function(int);
 
 final class JITCompiler: imported!"jitlang.ast".ASTVisitor {
 
@@ -77,6 +77,28 @@ final class JITCompiler: imported!"jitlang.ast".ASTVisitor {
                 break;
         }
         stackPush(DEM_JIT_R0); // Push result back onto stack
+    }
+
+    void visit(in Function func) {
+        // HACK: because the compile function was written with expressions in mind,
+        // it already does prolog/ret/epilog
+        //_jit_prolog(_jit); // This might not be directly applicable; adjust as needed for function context
+
+        // Compile the function body
+        func.body.accept(this);
+
+        // Finalize the function compilation
+        // _jit_ret(_jit);
+        // _jit_epilog(_jit);
+
+        // Example: Register the compiled function in a function table if needed
+        // This is highly dependent on your runtime's design
+    }
+
+    void visit(in Identifier) {
+        auto arg = _jit_arg(_jit, jit_code_arg_i);
+        _jit_getarg_i(_jit, DEM_JIT_R0, arg);
+        stackPush(DEM_JIT_R0);
     }
 
 private:

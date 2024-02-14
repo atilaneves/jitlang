@@ -17,5 +17,5 @@ void run(string[] args) {
     ast.writeln;
     auto compiler = new JITCompiler;
     const fun = compiler.compile(ast);
-    fun().writeln;
+    fun(4).writeln;
 }

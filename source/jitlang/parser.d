@@ -10,15 +10,27 @@ struct Parser {
 
     import jitlang.ast: ASTNode;
 
-    immutable(char)[] input;
+    string input;
     size_t pos;
 
-    this(immutable(char)[] input) {
+    this(string input) {
         this.input = input;
         this.pos = 0;
     }
 
     ASTNode parse() {
+        skipWhitespace();
+        if (lookAhead("fn")) {
+            return parseFunction();
+        } else {
+            auto result = parseExpr();
+            skipWhitespace();
+            if (pos < input.length) throw new Exception("Unexpected characters at end of input");
+            return result;
+        }
+    }
+
+    ASTNode parseOnlyExpressions() {
         auto result = parseExpr();
         skipWhitespace();
         if (pos < input.length) throw new Exception("Unexpected characters at end of input");
@@ -27,10 +39,51 @@ struct Parser {
 
 private:
 
+    ASTNode parseFunction() {
+        import jitlang.ast: Function, Identifier;
+
+        skipWhitespace();
+        if (!lookAhead("fn")) throw new Exception("Expected 'fn' for function definition");
+        pos += 2; // Advance past 'fn'
+        skipWhitespace();
+
+        // Parse the function name
+        size_t start = pos;
+        while (pos < input.length && isAlpha(input[pos])) pos++;
+        if (start == pos) throw new Exception("Expected function name");
+        string name = input[start .. pos];
+
+        // Parse parameters
+        ASTNode[] parameters;
+        skipWhitespace();
+        if (input[pos] != '(') throw new Exception("Expected '(' after function name");
+        pos++; // Skip '('
+        while (input[pos] != ')') {
+            skipWhitespace();
+            start = pos;
+            while (pos < input.length && isAlpha(input[pos])) pos++;
+            if (start == pos) throw new Exception("Expected parameter name");
+            parameters ~= new Identifier(input[start .. pos]);
+            skipWhitespace();
+            if (input[pos] == ',') pos++; // Skip ','
+        }
+        pos++; // Skip ')'
+
+        skipWhitespace();
+        if (!lookAhead("=>")) throw new Exception("Expected '=>' after parameters");
+        pos += 2; // Advance past '=>'
+
+        // Parse the function body
+        ASTNode body = parseExpr();
+
+        return new Function(name, parameters, body);
+    }
+
     ASTNode parseExpr() {
         import jitlang.ast: BinaryExpression;
 
         auto left = parseTerm();
+
         while (true) {
             skipWhitespace();
             if (pos >= input.length) break;
@@ -40,7 +93,11 @@ private:
 
             pos++;
             auto right = parseTerm();
-            left = new BinaryExpression(op == '+' ? BinaryExpression.Op.Add : BinaryExpression.Op.Sub, left, right);
+            left = new BinaryExpression(
+                op == '+' ? BinaryExpression.Op.Add : BinaryExpression.Op.Sub,
+                left,
+                right,
+            );
         }
         return left;
     }
@@ -68,18 +125,23 @@ private:
 
                 pos++;
                 auto right = parseFactor();
-                left = new BinaryExpression(op == '*' ? BinaryExpression.Op.Mul : BinaryExpression.Op.Div, left, right);
+                left = new BinaryExpression(
+                    op == '*' ? BinaryExpression.Op.Mul : BinaryExpression.Op.Div,
+                    left,
+                    right,
+                );
             }
         }
         return left;
     }
 
     ASTNode parseFactor() {
-        import jitlang.ast: Literal;
+        import jitlang.ast: Literal, Identifier;
 
         skipWhitespace();
         if (pos >= input.length) throw new Exception("Unexpected end of input");
 
+        // Handle parentheses for grouped expressions
         if (input[pos] == '(') {
             pos++; // Skip '('
             auto expr = parseExpr();
@@ -87,11 +149,22 @@ private:
             if (pos >= input.length || input[pos] != ')') throw new Exception("Expected ')'");
             pos++; // Skip ')'
             return expr;
-        } else {
+        }
+        // Handle numeric literals
+        else if (isDigit(input[pos])) {
             size_t start = pos;
             while (pos < input.length && isDigit(input[pos])) pos++;
-            if (start == pos) throw new Exception("Expected number");
             return new Literal(to!int(input[start .. pos]));
+        }
+        // Handle identifiers
+        else if (isAlpha(input[pos])) {
+            size_t start = pos;
+            while (pos < input.length && (isAlpha(input[pos]) || isDigit(input[pos]))) pos++;
+            string name = input[start .. pos];
+            return new Identifier(name);
+        }
+        else {
+            throw new Exception("Expected expression");
         }
     }
 
@@ -110,4 +183,9 @@ private:
     bool lookAhead(string s) {
         return input[pos..$].startsWith(s);
     }
+
+    static bool isAlpha(char c) @safe @nogc pure nothrow {
+        return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
+    }
+
 }
