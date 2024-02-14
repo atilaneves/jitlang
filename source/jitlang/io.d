@@ -11,15 +11,14 @@ shared static this() {
 
 void log(O, T...)(auto ref O output, auto ref T args) {
     import std.functional: forward;
-    output.writeln("[Reggae]  ", secondsSinceStartString, "s  ", forward!args);
+    output.writeln("[Reggae]  ", msSinceStartString, "ms  ", forward!args);
     output.flush;
 }
 
-
-private string secondsSinceStartString() @safe {
+private string msSinceStartString() @safe {
     import std.string: rightJustify;
     import std.conv: to;
-    return ("+" ~ (sinceStart / 1000.0).to!string).rightJustify(8, ' ');
+    return ("+" ~ sinceStart.to!string).rightJustify(8, ' ');
 }
 
 
