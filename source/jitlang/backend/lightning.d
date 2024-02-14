@@ -23,12 +23,12 @@ final class JITCompiler: imported!"jitlang.ast".ASTVisitor {
 
     void*[] compile(in ASTNode[] nodes) {
         import std.exception: enforce;
-        import std.algorithm: map;
+        import std.algorithm: map, filter;
         import std.array: array;
 
         jit_node_t*[] notes;
 
-        foreach(node; nodes) {
+        foreach(node; nodes.filter!(n => n.isFunction)) {
             // mark the start of this node
             notes ~= _jit_note(_jit, null, 0);
             // generate the code

@@ -13,6 +13,10 @@ class ASTNode {
     override string toString() @safe pure scope const {
         assert(0);
     }
+
+    bool isFunction() @safe @nogc pure scope nothrow const {
+        return false;
+    }
 }
 
 class Literal : ASTNode {
@@ -71,6 +75,10 @@ class Function : ASTNode {
         this.name = name;
         this.parameters = parameters;
         this.body = body;
+    }
+
+    override bool isFunction() @safe @nogc pure scope nothrow const {
+        return true;
     }
 
     override void accept(ASTVisitor visitor) const {

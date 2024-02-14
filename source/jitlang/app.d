@@ -24,9 +24,11 @@ void run(string[] args) {
     const symbols = compiler.compile(nodes);
     stdout.log("Compiled");
 
-    const fun = cast(int function(int)) symbols[0];
-
-    notLog(fun(options.arg));
+    foreach(symbol; symbols) {
+        // FIXME: use type information to get the right cast
+        auto fun = cast(int function(int)) symbol;
+        notLog(fun(options.arg));
+    }
 }
 
 private struct Options {
