@@ -5,7 +5,7 @@ void run(string[] args) {
     import jitlang.parser: Parser;
     import jitlang.backend.lightning;
     import jitlang.io: log;
-    import std.stdio: writeln, stdout;
+    import std.stdio: stdout;
     import std.file: readText;
 
     scope(exit)
@@ -20,7 +20,7 @@ void run(string[] args) {
 
     const nodes = Parser(source).parse;
     stdout.log("Parsed source file");
-    writeln("\n", nodes, "\n");
+    notLog(nodes);
 
     auto compiler = new JITCompiler;
     stdout.log("Compiling...");
@@ -29,5 +29,11 @@ void run(string[] args) {
 
     const fun = cast(int function(int)) symbols[0];
 
-    writeln("\n", fun(2), "\n");
+    notLog(fun(2));
+}
+
+
+private void notLog(A...)(auto ref A args) {
+    import std.stdio: writeln;
+    writeln("\n", args, "\n");
 }
