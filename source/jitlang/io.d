@@ -11,7 +11,7 @@ shared static this() {
 
 void log(O, T...)(auto ref O output, auto ref T args) {
     import std.functional: forward;
-    output.writeln("[Reggae]  ", msSinceStartString, "ms  ", forward!args);
+    output.writeln("[JIT]  ", msSinceStartString, "ms  ", forward!args);
     output.flush;
 }
 
@@ -20,7 +20,6 @@ private string msSinceStartString() @safe {
     import std.conv: to;
     return ("+" ~ sinceStart.to!string).rightJustify(8, ' ');
 }
-
 
 private auto sinceStart() @safe {
     import std.datetime: Clock;
