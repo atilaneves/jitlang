@@ -11,11 +11,11 @@ shared static this() {
 
 void log(O, T...)(auto ref O output, auto ref T args) {
     import std.functional: forward;
-    output.writeln("[JIT]  ", msSinceStartString, "ms  ", forward!args);
+    output.writeln("[JIT]  ", usSinceStartString, "us  ", forward!args);
     output.flush;
 }
 
-private string msSinceStartString() @safe {
+private string usSinceStartString() @safe {
     import std.string: rightJustify;
     import std.conv: to;
     return ("+" ~ sinceStart.to!string).rightJustify(8, ' ');
@@ -23,5 +23,5 @@ private string msSinceStartString() @safe {
 
 private auto sinceStart() @safe {
     import std.datetime: Clock;
-    return (Clock.currTime - gStartTime).total!"msecs";
+    return (Clock.currTime - gStartTime).total!"usecs";
 }

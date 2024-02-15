@@ -10,8 +10,10 @@ void run(string[] args) {
     scope(exit)
         stdout.log("Finished");
 
+    stdout.log("Start");
+
     const options = Options(args);
-    stdout.log(options.fileName);
+    stdout.log("Source file: ", options.fileName);
     const source = readText(options.fileName);
     stdout.log("Read source file");
 
