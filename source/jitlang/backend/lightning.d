@@ -89,6 +89,8 @@ final class JITCompiler: imported!"jitlang.ast".ASTVisitor {
     }
 
     void visit(in Identifier) {
+        // FIXME: this assumes there's only one parameter and that the
+        // value is in R0
         auto arg = _jit_arg(_jit, jit_code_arg_i);
         _jit_getarg_i(_jit, R0, arg);
     }
