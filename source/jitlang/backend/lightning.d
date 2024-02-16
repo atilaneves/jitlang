@@ -9,6 +9,7 @@ final class JITCompiler: imported!"jitlang.ast".ASTVisitor {
 
     jit_state_t* _jit;
     int stackPtr;
+    void*[] symbols;
 
     this() {
         _jit = jit_new_state();
@@ -21,14 +22,14 @@ final class JITCompiler: imported!"jitlang.ast".ASTVisitor {
         lightning._jit = null;
     }
 
-    void*[] compile(in ASTNode[] nodes) {
+    void visit(in Module module_) {
         import std.exception: enforce;
         import std.algorithm: map, filter;
         import std.array: array;
 
         jit_node_t*[] notes;
 
-        foreach(node; nodes.filter!(n => n.isFunction)) {
+        foreach(node; module_.nodes.filter!(n => n.isFunction)) {
             // mark the start of this node
             notes ~= _jit_note(_jit, null, 0);
             // generate the code
@@ -39,9 +40,10 @@ final class JITCompiler: imported!"jitlang.ast".ASTVisitor {
         enforce(_jit_emit(_jit) !is null, "JIT compilation failed");
 
         // convert to function pointer addresses
-        return notes
+        symbols = notes
             .map!(n => _jit_address(_jit, n))
-            .array;
+            .array
+            ;
     }
 
     void visit(in Literal lit) {

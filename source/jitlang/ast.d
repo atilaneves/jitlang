@@ -1,6 +1,7 @@
 module jitlang.ast;
 
 interface ASTVisitor {
+    void visit(in Module);
     void visit(in Function);
     void visit(in Literal);
     void visit(in BinaryExpression);
@@ -16,6 +17,24 @@ class ASTNode {
 
     bool isFunction() @safe @nogc pure scope nothrow const {
         return false;
+    }
+}
+
+class Module: ASTNode {
+
+    ASTNode[] nodes;
+
+    this(ASTNode[] nodes) @safe @nogc pure nothrow {
+        this.nodes = nodes;
+    }
+
+    override void accept(ASTVisitor visitor) const {
+        visitor.visit(this);
+    }
+
+    override string toString() @safe pure scope const {
+        import std.conv: text;
+        return text(nodes);
     }
 }
 

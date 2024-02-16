@@ -8,7 +8,7 @@ import std.array;
 
 struct Parser {
 
-    import jitlang.ast: ASTNode;
+    import jitlang.ast: ASTNode, Module;
 
     string input;
     size_t pos;
@@ -18,8 +18,7 @@ struct Parser {
         this.pos = 0;
     }
 
-    ASTNode[] parse() {
-
+    Module parse() {
         ASTNode[] nodes;
 
         while(pos < input.length) {
@@ -33,9 +32,8 @@ struct Parser {
             }
         }
 
-        return nodes;
+        return new Module(nodes);
     }
-
 
     ASTNode parseFunction() {
         import jitlang.ast: Function, Identifier;

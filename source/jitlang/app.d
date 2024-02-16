@@ -17,16 +17,16 @@ void run(string[] args) {
     const source = readText(options.fileName);
     stdout.log("Read source file");
 
-    const nodes = Parser(source).parse;
+    const module_ = Parser(source).parse;
     stdout.log("Parsed source file");
-    notLog(nodes);
+    notLog(module_);
 
     auto compiler = new JITCompiler;
     stdout.log("Compiling...");
-    const symbols = compiler.compile(nodes);
+    compiler.visit(module_);
     stdout.log("Compiled");
 
-    foreach(symbol; symbols) {
+    foreach(symbol; compiler.symbols) {
         // FIXME: use type information to get the right cast
         auto fun = cast(int function(int)) symbol;
         notLog(fun(options.arg));
