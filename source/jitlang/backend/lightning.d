@@ -46,9 +46,17 @@ final class JITCompiler: imported!"jitlang.ast".ASTVisitor {
             ;
     }
 
-    void visit(in Literal lit) {
-        dem_jit_movi(DEM_JIT_R0, lit.value);
-        stackPush(DEM_JIT_R0);
+    void visit(in Function func) {
+        _jit_prolog(_jit);
+        stackPtr = _jit_allocai(_jit, 1024 * int.sizeof);
+
+        func.body.accept(this);
+
+        // Move the result from the stack to the return register
+        stackPop(DEM_JIT_R0);
+
+        _jit_ret(_jit);
+        _jit_epilog(_jit);
     }
 
     void visit(in BinaryExpression expr) {
@@ -81,17 +89,9 @@ final class JITCompiler: imported!"jitlang.ast".ASTVisitor {
         stackPush(DEM_JIT_R0); // Push result back onto stack
     }
 
-    void visit(in Function func) {
-        _jit_prolog(_jit);
-        stackPtr = _jit_allocai(_jit, 1024 * int.sizeof);
-
-        func.body.accept(this);
-
-        // Move the result from the stack to the return register
-        stackPop(DEM_JIT_R0);
-
-        _jit_ret(_jit);
-        _jit_epilog(_jit);
+    void visit(in Literal lit) {
+        dem_jit_movi(DEM_JIT_R0, lit.value);
+        stackPush(DEM_JIT_R0);
     }
 
     void visit(in Identifier) {
