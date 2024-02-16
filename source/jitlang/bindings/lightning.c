@@ -4,9 +4,9 @@
 jit_state_t* _jit;
 
 // demacroify
-const int DEM_JIT_R0 = JIT_R0;
-const int DEM_JIT_R1 = JIT_R1;
-const int DEM_JIT_FP = JIT_FP;
+const int R0 = JIT_R0;
+const int R1 = JIT_R1;
+const int FP = JIT_FP;
 
 // copied from the header (sigh)
 int dem_jit_movi(int u, int v) {
