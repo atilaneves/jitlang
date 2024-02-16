@@ -28,6 +28,7 @@ void run(string[] args) {
 
     foreach(symbol; compiler.symbols) {
         // FIXME: use type information to get the right cast
+        // FIXME: function name
         auto fun = cast(int function(int)) symbol;
         notLog(fun(options.arg));
     }

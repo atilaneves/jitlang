@@ -17,6 +17,10 @@ int movi(int u, int v) {
     return jit_movi(u, v);
 }
 
+int movr(int u, int v) {
+    return jit_movr(u, v);
+}
+
 int addr(int u, int v, int w) {
     return jit_addr(u, v, w);
 }

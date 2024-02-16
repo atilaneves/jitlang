@@ -52,95 +52,56 @@ final class JITCompiler: imported!"jitlang.ast".ASTVisitor {
 
         func.body.accept(this);
 
-        // Move the result from the stack to the return register
-        stackPop(R0);
-
         _jit_ret(_jit);
         _jit_epilog(_jit);
     }
 
     void visit(in BinaryExpression expr) {
         expr.right.accept(this);
+        movr(V0, R0);
         expr.left.accept(this);
-
-        stackPop(R0); // Pop left operand
-        stackPop(R1); // Pop right operand
+        movr(V1, R0);
 
         final switch (expr.op) with(BinaryExpression.Op) {
             case Add:
-                addr(R0, R0, R1);
+                addr(R0, V0, V1);
                 break;
             case Sub:
-                subr(R0, R0, R1);
+                subr(R0, V0, V1);
                 break;
             case Mul:
-                mulr(R0, R0, R1);
+                mulr(R0, V0, V1);
                 break;
             case Div:
-                divr(R0, R0, R1);
+                divr(R0, V0, V1);
                 break;
             case ShiftLeft:
-                lshr(R0, R0, R1);
+                lshr(R0, V0, V1);
                 break;
             case ShiftRight:
-                rshr(R0, R0, R1);
+                rshr(R0, V0, V1);
                 break;
         }
-        stackPush(R0); // Push result back onto stack
     }
 
     void visit(in Literal lit) {
         movi(R0, lit.value);
-        stackPush(R0);
     }
 
     void visit(in Identifier) {
         auto arg = _jit_arg(_jit, jit_code_arg_i);
         _jit_getarg_i(_jit, R0, arg);
-        stackPush(R0);
     }
 
 private:
-    void emitAST(in ASTNode node) {
-        import jitlang.ast: BinaryExpression, Literal;
 
-        if (auto lit = cast(Literal)node) {
-            movi(R0, lit.value);
-            stackPush(R0);
-        } else if (auto binOp = cast(BinaryExpression) node) {
-            emitAST(binOp.right);
-            emitAST(binOp.left);
-
-            stackPop(R1); // Pop left operand
-            stackPop(R0); // Pop right operand, now R0 has the left operand, R1 has the right operand
-
-            switch (binOp.op) {
-            case BinaryExpression.Op.Add:
-                addr(R0, R0, R1);
-                break;
-            case BinaryExpression.Op.Sub:
-                subr(R0, R0, R1);
-                break;
-            case BinaryExpression.Op.Mul:
-                mulr(R0, R0, R1);
-                break;
-            case BinaryExpression.Op.Div:
-                divr(R0, R0, R1);
-                break;
-            default:
-                throw new Exception("Unsupported binary operation");
-            }
-            stackPush(R0); // Push result back onto stack
-        } else {
-            throw new Exception("Unsupported AST node type");
-        }
-    }
-
+    // push a register onto the stack
     void stackPush(int reg) {
         stxi_i(stackPtr, FP, reg);
         stackPtr += int.sizeof;
     }
 
+    // pop a value from the stack into a register
     void stackPop(int reg) {
         stackPtr -= int.sizeof;
         ldxi_i(reg, FP, stackPtr);
