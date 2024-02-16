@@ -26,9 +26,8 @@ struct Parser {
             if (lookAhead("fn")) {
                 nodes ~= parseFunction();
             } else {
-                auto result = parseExpr();
+                nodes ~= parseExpr();
                 skipWhitespace();
-                nodes ~= result;
             }
         }
 
