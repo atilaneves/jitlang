@@ -4,8 +4,12 @@
 jit_state_t* _jit;
 
 // demacroify
-const int R0 = JIT_R0;
+const int R0 = JIT_R0; // call-clobbered
 const int R1 = JIT_R1;
+const int R2 = JIT_R2;
+const int V0 = JIT_V0; // callee-saved (persist across calls)
+const int V1 = JIT_V1;
+const int V2 = JIT_V2;
 const int FP = JIT_FP;
 
 // copied from the header (sigh)
