@@ -26,12 +26,12 @@ void run(string[] args) {
     compiler.visit(module_);
     stdout.log("Compiled");
 
-    foreach(name, symbol; compiler.symbols) {
-        // FIXME: use type information to get the right cast
-        // FIXME: function name
-        auto fun = cast(int function(int)) symbol;
-        notLog(name, "(", options.arg, "): ", fun(options.arg));
-    }
+    if("main" !in compiler.symbols)
+        throw new Exception("No main function");
+
+    alias MainFunc = extern(C) int function(int);
+    auto main = cast(MainFunc) compiler.symbols["main"];
+    stdout.log("Main: ", main(options.arg));
 }
 
 private struct Options {
