@@ -12,14 +12,18 @@ final class JITCompiler: imported!"jitlang.ast".ASTVisitor {
     void*[string] symbols;
 
     this() {
-        _jit = jit_new_state();
-        // HACK: FIXME
-        lightning._jit = _jit;
+        newState;
     }
 
     ~this() {
         if (_jit) _jit_destroy_state(_jit);
         lightning._jit = null;
+        finish_jit;
+    }
+
+    private void newState() {
+        // HACK: FIXME
+        _jit = lightning._jit = jit_new_state();
     }
 
     void visit(in Module module_) {
@@ -36,21 +40,15 @@ final class JITCompiler: imported!"jitlang.ast".ASTVisitor {
             .map!(f => cast(Function) f)
             ;
 
-        foreach(node; functions.save) {
-            // mark the start of this node
-            notes ~= _jit_note(_jit, null, 0);
-            // generate the code
-            node.accept(this);
+        foreach(function_; functions.save) {
+            function_.accept(this);
+            auto symbol =  _jit_emit(_jit);
+            enforce(symbol, "JIT compilation failed for function `" ~ function_.name ~ `"`);
+            symbols[function_.name] = symbol;
+            _jit_clear_state(_jit);
+            newState;
         }
 
-        // emit all of the code
-        enforce(_jit_emit(_jit) !is null, "JIT compilation failed");
-
-        // convert to function pointer addresses
-        foreach(i; 0 .. notes.length) {
-            symbols[functions.array[i].name] = _jit_address(_jit, notes[i]);
-
-        }
     }
 
     void visit(in Function func) {
@@ -70,14 +68,32 @@ final class JITCompiler: imported!"jitlang.ast".ASTVisitor {
         if(call.name !in symbols)
             throw new Exception("No symbol found for function `" ~ call.name ~ "`");
 
-        _jit_prepare(_jit);
-
         foreach(i, arg; call.args) {
             arg.accept(this);
-            pushargr(R0);
+            movr(regv(i), R0);
+        }
+
+        _jit_prepare(_jit);
+
+        foreach(i; 0 .. call.args.length) {
+            pushargr(regv(i));
         }
 
         _jit_finishi(_jit, symbols[call.name]);
+        _jit_ret(_jit);
+    }
+
+    private jit_code_t regv(size_t i) {
+        switch(i) {
+            default:
+                assert(0);
+            case 0:
+                return V0;
+            case 1:
+                return V1;
+            case 2:
+                return V2;
+        }
     }
 
     void visit(in BinaryExpression expr) {
@@ -115,8 +131,8 @@ final class JITCompiler: imported!"jitlang.ast".ASTVisitor {
     void visit(in Identifier) {
         // FIXME: this assumes there's only one parameter and that the
         // value is in R0
-        auto arg = _jit_arg(_jit, jit_code_arg_i);
-        _jit_getarg_i(_jit, R0, arg);
+        auto a = arg();
+        getarg(R0, a);
     }
 
 private:

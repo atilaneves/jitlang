@@ -4,13 +4,13 @@
 jit_state_t* _jit;
 
 // demacroify
-const int R0 = JIT_R0; // call-clobbered
-const int R1 = JIT_R1;
-const int R2 = JIT_R2;
-const int V0 = JIT_V0; // callee-saved (persist across calls)
-const int V1 = JIT_V1;
-const int V2 = JIT_V2;
-const int FP = JIT_FP;
+const jit_code_t R0 = JIT_R0; // call-clobbered
+const jit_code_t R1 = JIT_R1;
+const jit_code_t R2 = JIT_R2;
+const jit_code_t V0 = JIT_V0; // callee-saved (persist across calls)
+const jit_code_t V1 = JIT_V1;
+const jit_code_t V2 = JIT_V2;
+const jit_code_t FP = JIT_FP;
 
 // copied from the header (sigh)
 int movi(int u, int v) {
@@ -55,4 +55,12 @@ int rshr(int u, int v, int w) {
 
 void pushargr(int u) {
     jit_pushargr(u);
+}
+
+jit_node_t* arg() {
+    return jit_arg();
+}
+
+void getarg(jit_gpr_t u, jit_node_t* v) {
+    return jit_getarg(u, v);
 }
