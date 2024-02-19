@@ -8,6 +8,7 @@ interface ASTVisitor {
     void visit(in Identifier);
     void visit(in FunctionCall);
     void visit(in ArrayLiteral);
+    void visit(in ArrayIndexing);
 }
 
 class ASTNode {
@@ -221,5 +222,27 @@ class ArrayLiteral : ASTNode {
 
         string elemsRepr = elements.map!(e => e.toStringImpl(depth + 1)).join(",\n");
         return text(indent(depth), "ArrayLiteral: [\n", elemsRepr, "\n", indent(depth), "]");
+    }
+}
+
+class ArrayIndexing : ASTNode {
+    ASTNode array;
+    ASTNode index;
+
+    this(ASTNode array, ASTNode index) {
+        this.array = array;
+        this.index = index;
+    }
+
+    override void accept(ASTVisitor visitor) const {
+        visitor.visit(this);
+    }
+
+    override protected string toStringImpl(int depth) const @safe pure scope {
+        import std.conv: text;
+        return text(indent(depth), "ArrayIndexing:\n",
+                    array.toStringImpl(depth + 1), "\n",
+                    indent(depth + 1), "Index:\n",
+                    index.toStringImpl(depth + 2));
     }
 }

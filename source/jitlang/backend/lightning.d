@@ -142,6 +142,10 @@ final class JITCompiler: imported!"jitlang.ast".ASTVisitor {
         throw new Exception("Not supported yet");
     }
 
+    void visit(in ArrayIndexing arrayIndex) {
+        throw new Exception("Not supported yet");
+    }
+
 private:
 
     // push a register onto the stack
