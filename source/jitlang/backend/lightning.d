@@ -11,7 +11,9 @@ final class JITCompiler: imported!"jitlang.ast".ASTVisitor {
     int stackPtr;
     void*[string] symbols;
 
-    this() {
+    this(string name = null) {
+        import std.string: toStringz;
+        init_jit(name.toStringz);
         newState;
     }
 
@@ -46,6 +48,7 @@ final class JITCompiler: imported!"jitlang.ast".ASTVisitor {
             enforce(symbol, "JIT compilation failed for function `" ~ function_.name ~ `"`);
             symbols[function_.name] = symbol;
             _jit_clear_state(_jit);
+            //_jit_disassemble(_jit);
             newState;
         }
 
@@ -57,7 +60,7 @@ final class JITCompiler: imported!"jitlang.ast".ASTVisitor {
 
         func.body.accept(this);
 
-        _jit_ret(_jit);
+        retr(R0);
         _jit_epilog(_jit);
     }
 
@@ -80,7 +83,7 @@ final class JITCompiler: imported!"jitlang.ast".ASTVisitor {
         }
 
         _jit_finishi(_jit, symbols[call.name]);
-        _jit_ret(_jit);
+        retr(R0);
     }
 
     private jit_code_t regv(size_t i) {

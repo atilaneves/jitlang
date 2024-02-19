@@ -64,3 +64,11 @@ jit_node_t* arg() {
 void getarg(jit_gpr_t u, jit_node_t* v) {
     return jit_getarg(u, v);
 }
+
+void retr(ulong u) {
+    jit_retr(u);
+}
+
+void calli(void* symbol) {
+    jit_calli(symbol);
+}
