@@ -38,31 +38,31 @@ struct Parser {
         import jitlang.ast: Function, Identifier, Type, U32, Array;
 
         skipWhitespace();
-        if (!lookAhead("fn")) throw new Exception("Expected 'fn' for function definition");
+        if (!lookAhead("fn")) error("Expected 'fn' for function definition");
         pos += 2; // Advance past 'fn'
         skipWhitespace();
 
         // Parse the function name
         size_t start = pos;
         while (pos < input.length && isAlpha(input[pos])) pos++;
-        if (start == pos) throw new Exception("Expected function name");
+        if (start == pos) error("Expected function name");
         string name = input[start .. pos];
 
         // Parse parameters
         Function.Parameter[] parameters;
         skipWhitespace();
-        if (input[pos] != '(') throw new Exception("Expected '(' after function name");
+        if (input[pos] != '(') error("Expected '(' after function name");
         pos++; // Skip '('
         while (input[pos] != ')') {
             skipWhitespace();
             start = pos;
             while (pos < input.length && isAlphaNumeric(input[pos])) pos++;
-            if (start == pos) throw new Exception("Expected parameter name");
+            if (start == pos) error("Expected parameter name");
             string paramName = input[start .. pos];
 
             skipWhitespace();
             if (input[pos] != ':')
-                throw new Exception("Expected ':' after parameter name for type declaration");
+                error("Expected ':' after parameter name for type declaration");
             pos++; // Skip ':'
             Type paramType = parseType(); // Parse the type of the parameter
 
@@ -74,12 +74,12 @@ struct Parser {
         pos++; // Skip ')'
 
         skipWhitespace();
-        if (input[pos] != ':') throw new Exception("Expected ':' after parameters for return type declaration");
+        if (input[pos] != ':') error("Expected ':' after parameters for return type declaration");
         pos++; // Skip ':'
         Type returnType = parseType(); // Parse the return type
 
         skipWhitespace();
-        if (!lookAhead("=>")) throw new Exception("Expected '=>' after return type");
+        if (!lookAhead("=>")) error("Expected '=>' after return type");
         pos += 2; // Advance past '=>'
 
         // Parse the function body
@@ -96,7 +96,7 @@ struct Parser {
             pos++; // Skip '['
             Type elementType = parseType(); // Recursively parse the element type
             skipWhitespace();
-            if (input[pos] != ']') throw new Exception("Expected ']' after type in array declaration");
+            if (input[pos] != ']') error("Expected ']' after type in array declaration");
             pos++; // Skip ']'
             return new Array(elementType); // Create and return an Array type
         } else {
@@ -105,7 +105,7 @@ struct Parser {
             if (typeName == "u32") {
                 return new U32();
             } else {
-                throw new Exception("Unknown type: " ~ typeName);
+                error("Unknown type: " ~ typeName);
             }
         }
     }
@@ -177,14 +177,14 @@ struct Parser {
         import jitlang.ast: Literal, Identifier, FunctionCall;
 
         skipWhitespace();
-        if (pos >= input.length) throw new Exception("Unexpected end of input");
+        if (pos >= input.length) error("Unexpected end of input");
 
         // Handle parentheses for grouped expressions
         if (input[pos] == '(') {
             pos++; // Skip '('
             auto expr = parseExpr();
             skipWhitespace();
-            if (pos >= input.length || input[pos] != ')') throw new Exception("Expected ')'");
+            if (pos >= input.length || input[pos] != ')') error("Expected ')'");
             pos++; // Skip ')'
             return expr;
         }
@@ -213,7 +213,7 @@ struct Parser {
             }
         }
         else {
-            throw new Exception("Expected expression");
+            error("Expected expression");
         }
     }
 
@@ -238,10 +238,10 @@ struct Parser {
                 break; // Exit the loop, as we've found the end of the current argument list.
             } else {
                 if (pos >= input.length)
-                    throw new Exception("Unexpected end of input while parsing arguments");
+                    error("Unexpected end of input while parsing arguments");
 
                 // If neither ',' nor ')' is found, it indicates an unexpected character.
-                throw new Exception("Expected ',' or ')' in function arguments, found '" ~ input[pos] ~ "'");
+                error("Expected ',' or ')' in function arguments, found '" ~ input[pos] ~ "'");
             }
         }
 
@@ -249,6 +249,9 @@ struct Parser {
         return args;
     }
 
+    private noreturn error(string msg) {
+        throw new Exception(msg ~ "\n" ~ input[pos..$]);
+    }
 
     void skipWhitespace() {
         while (pos < input.length && isWhitespace(input[pos])) pos++;
