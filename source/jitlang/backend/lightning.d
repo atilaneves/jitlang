@@ -138,6 +138,10 @@ final class JITCompiler: imported!"jitlang.ast".ASTVisitor {
         getarg(R0, a);
     }
 
+    void visit(in ArrayLiteral arrayLiteral) {
+        throw new Exception("Not supported yet");
+    }
+
 private:
 
     // push a register onto the stack

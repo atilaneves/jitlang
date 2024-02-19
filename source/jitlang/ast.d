@@ -7,6 +7,7 @@ interface ASTVisitor {
     void visit(in BinaryExpression);
     void visit(in Identifier);
     void visit(in FunctionCall);
+    void visit(in ArrayLiteral);
 }
 
 class ASTNode {
@@ -199,5 +200,26 @@ class FunctionCall : ASTNode {
     override string toStringImpl(int depth) @safe pure scope const {
         import std.conv: text;
         return text(indent(depth), `FunctionCall(`, name, `, `, args, `)`);
+    }
+}
+
+class ArrayLiteral : ASTNode {
+    ASTNode[] elements;
+
+    this(ASTNode[] elements) {
+        this.elements = elements;
+    }
+
+    override void accept(ASTVisitor visitor) const {
+        visitor.visit(this);
+    }
+
+    override protected string toStringImpl(int depth) const @safe pure scope {
+        import std.algorithm: map;
+        import std.array: join;
+        import std.conv: text;
+
+        string elemsRepr = elements.map!(e => e.toStringImpl(depth + 1)).join(",\n");
+        return text(indent(depth), "ArrayLiteral: [\n", elemsRepr, "\n", indent(depth), "]");
     }
 }

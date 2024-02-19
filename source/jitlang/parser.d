@@ -174,13 +174,22 @@ struct Parser {
     }
 
     ASTNode parseFactor() {
-        import jitlang.ast: Literal, Identifier, FunctionCall;
+        import jitlang.ast: Literal, Identifier, FunctionCall, ArrayLiteral;
 
         skipWhitespace();
         if (pos >= input.length) error("Unexpected end of input");
 
+        // Handle array literals
+        if (input[pos] == '[') {
+            pos++; // Skip '['
+            ASTNode[] elements = parseArrayElements();
+            skipWhitespace();
+            if (pos >= input.length || input[pos] != ']') throw new Exception("Expected ']' at the end of array literal");
+            pos++; // Skip ']'
+            return new ArrayLiteral(elements);
+        }
         // Handle parentheses for grouped expressions
-        if (input[pos] == '(') {
+        else if (input[pos] == '(') {
             pos++; // Skip '('
             auto expr = parseExpr();
             skipWhitespace();
@@ -215,6 +224,19 @@ struct Parser {
         else {
             error("Expected expression");
         }
+    }
+
+    ASTNode[] parseArrayElements() {
+        ASTNode[] elements;
+        while (pos < input.length && input[pos] != ']') {
+            elements ~= parseExpr(); // Parse an expression
+            skipWhitespace();
+            if (pos < input.length && input[pos] == ',') {
+                pos++; // Skip ',' to continue to the next element
+                skipWhitespace();
+            }
+        }
+        return elements;
     }
 
     ASTNode[] parseArguments() {
