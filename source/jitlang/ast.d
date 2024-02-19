@@ -6,6 +6,7 @@ interface ASTVisitor {
     void visit(in Literal);
     void visit(in BinaryExpression);
     void visit(in Identifier);
+    void visit(in FunctionCall);
 }
 
 class ASTNode {
@@ -124,5 +125,24 @@ class Identifier : ASTNode {
     override string toString() @safe pure scope const {
         import std.conv: text;
         return text("Identifier(", name, ")");
+    }
+}
+
+class FunctionCall : ASTNode {
+    string name;
+    ASTNode[] args;
+
+    this(string name, ASTNode[] args) {
+        this.name = name;
+        this.args = args;
+    }
+
+    override void accept(ASTVisitor visitor) const {
+        visitor.visit(this);
+    }
+
+    override string toString() @safe pure scope const {
+        import std.conv: text;
+        return text(`FunctionCall(`, name, `, `, args, `)`);
     }
 }

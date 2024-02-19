@@ -5,7 +5,7 @@ int main(string[] args) {
         return 0;
     } catch(Throwable t) {
         import std.stdio: stderr;
-        stderr.writeln("Error: ", t.msg);
+        stderr.writeln("Error: ", t);
         return 1;
     }
 }

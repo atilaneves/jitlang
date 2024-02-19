@@ -9,7 +9,7 @@ final class JITCompiler: imported!"jitlang.ast".ASTVisitor {
 
     jit_state_t* _jit;
     int stackPtr;
-    void*[] symbols;
+    void*[string] symbols;
 
     this() {
         _jit = jit_new_state();
@@ -23,13 +23,20 @@ final class JITCompiler: imported!"jitlang.ast".ASTVisitor {
     }
 
     void visit(in Module module_) {
+        import jitlang.ast: Function;
         import std.exception: enforce;
         import std.algorithm: map, filter;
         import std.array: array;
 
         jit_node_t*[] notes;
 
-        foreach(node; module_.nodes.filter!(n => n.isFunction)) {
+        auto functions = module_
+            .nodes
+            .filter!(n => n.isFunction)
+            .map!(f => cast(Function) f)
+            ;
+
+        foreach(node; functions.save) {
             // mark the start of this node
             notes ~= _jit_note(_jit, null, 0);
             // generate the code
@@ -40,10 +47,10 @@ final class JITCompiler: imported!"jitlang.ast".ASTVisitor {
         enforce(_jit_emit(_jit) !is null, "JIT compilation failed");
 
         // convert to function pointer addresses
-        symbols = notes
-            .map!(n => _jit_address(_jit, n))
-            .array
-            ;
+        foreach(i; 0 .. notes.length) {
+            symbols[functions.array[i].name] = _jit_address(_jit, notes[i]);
+
+        }
     }
 
     void visit(in Function func) {
@@ -54,6 +61,23 @@ final class JITCompiler: imported!"jitlang.ast".ASTVisitor {
 
         _jit_ret(_jit);
         _jit_epilog(_jit);
+    }
+
+    void visit(in FunctionCall call) {
+        if(call.args.length > 3)
+            throw new Exception("Can only handle functions of up to 3 parameters");
+
+        if(call.name !in symbols)
+            throw new Exception("No symbol found for function `" ~ call.name ~ "`");
+
+        _jit_prepare(_jit);
+
+        foreach(i, arg; call.args) {
+            arg.accept(this);
+            pushargr(R0);
+        }
+
+        _jit_finishi(_jit, symbols[call.name]);
     }
 
     void visit(in BinaryExpression expr) {

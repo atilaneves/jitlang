@@ -131,7 +131,7 @@ struct Parser {
     }
 
     ASTNode parseFactor() {
-        import jitlang.ast: Literal, Identifier;
+        import jitlang.ast: Literal, Identifier, FunctionCall;
 
         skipWhitespace();
         if (pos >= input.length) throw new Exception("Unexpected end of input");
@@ -151,17 +151,61 @@ struct Parser {
             while (pos < input.length && isDigit(input[pos])) pos++;
             return new Literal(to!int(input[start .. pos]));
         }
-        // Handle identifiers
+        // Handle function calls
         else if (isAlpha(input[pos])) {
             size_t start = pos;
             while (pos < input.length && (isAlpha(input[pos]) || isDigit(input[pos]))) pos++;
             string name = input[start .. pos];
-            return new Identifier(name);
+
+            skipWhitespace();
+            // Check for function call
+            if (pos < input.length && input[pos] == '(') {
+                pos++; // Skip '('
+                ASTNode[] args = parseArguments();
+                skipWhitespace();
+                // no need to skip closing paren since done in `parseArguments`
+                return new FunctionCall(name, args);
+            } else {
+                return new Identifier(name);
+            }
         }
         else {
             throw new Exception("Expected expression");
         }
     }
+
+    ASTNode[] parseArguments() {
+        ASTNode[] args;
+        skipWhitespace();
+
+        // Check if we're immediately at the end of the argument list.
+        if (pos < input.length && input[pos] == ')') {
+            pos++; // Correctly skip the closing ')' for the current function call.
+            return args; // Return the empty argument list.
+        }
+
+        while (pos < input.length) {
+            args ~= parseExpr(); // Parse an argument expression.
+            skipWhitespace();
+            if (pos < input.length && input[pos] == ',') {
+                pos++; // Skip the comma to parse the next argument.
+                skipWhitespace();
+            } else if (pos < input.length && input[pos] == ')') {
+                pos++; // Correctly skip the closing ')' for the current function call.
+                break; // Exit the loop, as we've found the end of the current argument list.
+            } else {
+                if (pos >= input.length)
+                    throw new Exception("Unexpected end of input while parsing arguments");
+
+                // If neither ',' nor ')' is found, it indicates an unexpected character.
+                throw new Exception("Expected ',' or ')' in function arguments, found '" ~ input[pos] ~ "'");
+            }
+        }
+
+        // No need for an additional check for exhausting input here, as the loop condition and breaks handle it.
+        return args;
+    }
+
 
     void skipWhitespace() {
         while (pos < input.length && isWhitespace(input[pos])) pos++;

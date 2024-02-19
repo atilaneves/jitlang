@@ -52,3 +52,7 @@ int lshr(int u, int v, int w) {
 int rshr(int u, int v, int w) {
     return jit_rshr(u, v, w);
 }
+
+void pushargr(int u) {
+    jit_pushargr(u);
+}

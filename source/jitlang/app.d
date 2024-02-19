@@ -26,11 +26,11 @@ void run(string[] args) {
     compiler.visit(module_);
     stdout.log("Compiled");
 
-    foreach(symbol; compiler.symbols) {
+    foreach(name, symbol; compiler.symbols) {
         // FIXME: use type information to get the right cast
         // FIXME: function name
         auto fun = cast(int function(int)) symbol;
-        notLog(fun(options.arg));
+        notLog(name, "(", options.arg, "): ", fun(options.arg));
     }
 }
 

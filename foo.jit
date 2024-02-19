@@ -1,3 +1,4 @@
 fn twice(x) => x * 2
 42
 fn thrice(y) => y * 3
+fn sixt(x) => thrice(twice(x))
