@@ -1,5 +1,5 @@
-fn twice(x) => x * 2
+fn twice(x: u32): u32 => x * 2
 42
-fn thrice(y) => y * 3
-fn sixt(x) => thrice(twice(x))
-fn main(x) => thrice(x)
+fn thrice(y: u32): u32 => y * 3
+fn sixt(x: u32): u32 => thrice(twice(x))
+fn main(x: u32): u32 => thrice(x)

@@ -86,15 +86,38 @@ class BinaryExpression : ASTNode {
     }
 }
 
-class Function : ASTNode {
-    string name;
-    ASTNode[] parameters;
-    ASTNode body;
+abstract class Type {
+}
 
-    this(string name, ASTNode[] parameters, ASTNode body) {
+class U32: Type {
+
+}
+
+class Array: Type {
+    Type element;
+
+    this(Type element) {
+        this.element = element;
+    }
+}
+
+class Function : ASTNode {
+
+    static struct Parameter {
+        string name;
+        Type type;
+    }
+
+    string name;
+    Parameter[] parameters;
+    ASTNode body;
+    Type returnType;
+
+    this(string name, Parameter[] parameters, ASTNode body, Type returnType) {
         this.name = name;
         this.parameters = parameters;
         this.body = body;
+        this.returnType = returnType;
     }
 
     override bool isFunction() @safe @nogc pure scope nothrow const {

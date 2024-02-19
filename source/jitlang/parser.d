@@ -8,7 +8,7 @@ import std.array;
 
 struct Parser {
 
-    import jitlang.ast: ASTNode, Module;
+    import jitlang.ast: ASTNode, Module, Type;
 
     string input;
     size_t pos;
@@ -35,7 +35,7 @@ struct Parser {
     }
 
     ASTNode parseFunction() {
-        import jitlang.ast: Function, Identifier;
+        import jitlang.ast: Function, Identifier, Type, U32, Array;
 
         skipWhitespace();
         if (!lookAhead("fn")) throw new Exception("Expected 'fn' for function definition");
@@ -49,30 +49,73 @@ struct Parser {
         string name = input[start .. pos];
 
         // Parse parameters
-        ASTNode[] parameters;
+        Function.Parameter[] parameters;
         skipWhitespace();
         if (input[pos] != '(') throw new Exception("Expected '(' after function name");
         pos++; // Skip '('
         while (input[pos] != ')') {
             skipWhitespace();
             start = pos;
-            while (pos < input.length && isAlpha(input[pos])) pos++;
+            while (pos < input.length && isAlphaNumeric(input[pos])) pos++;
             if (start == pos) throw new Exception("Expected parameter name");
-            parameters ~= new Identifier(input[start .. pos]);
+            string paramName = input[start .. pos];
+
             skipWhitespace();
-            if (input[pos] == ',') pos++; // Skip ','
+            if (input[pos] != ':')
+                throw new Exception("Expected ':' after parameter name for type declaration");
+            pos++; // Skip ':'
+            Type paramType = parseType(); // Parse the type of the parameter
+
+            parameters ~= Function.Parameter(paramName, paramType);
+
+            skipWhitespace();
+            if (input[pos] == ',') pos++; // Skip ',' to continue to the next parameter
         }
         pos++; // Skip ')'
 
         skipWhitespace();
-        if (!lookAhead("=>")) throw new Exception("Expected '=>' after parameters");
+        if (input[pos] != ':') throw new Exception("Expected ':' after parameters for return type declaration");
+        pos++; // Skip ':'
+        Type returnType = parseType(); // Parse the return type
+
+        skipWhitespace();
+        if (!lookAhead("=>")) throw new Exception("Expected '=>' after return type");
         pos += 2; // Advance past '=>'
 
         // Parse the function body
         ASTNode body = parseExpr();
 
-        return new Function(name, parameters, body);
+        return new Function(name, parameters, body, returnType);
     }
+
+    Type parseType() {
+        import jitlang.ast: U32, Array;
+
+        skipWhitespace();
+        if (input[pos] == '[') {
+            pos++; // Skip '['
+            Type elementType = parseType(); // Recursively parse the element type
+            skipWhitespace();
+            if (input[pos] != ']') throw new Exception("Expected ']' after type in array declaration");
+            pos++; // Skip ']'
+            return new Array(elementType); // Create and return an Array type
+        } else {
+            // Assuming 'u32' is the only simple type for now
+            string typeName = parseTypeName(); // Extract the type name, e.g., "u32"
+            if (typeName == "u32") {
+                return new U32();
+            } else {
+                throw new Exception("Unknown type: " ~ typeName);
+            }
+        }
+    }
+
+    string parseTypeName() {
+        size_t start = pos;
+        while (pos < input.length && isAlphaNumeric(input[pos])) pos++;
+        return input[start .. pos];
+    }
+
 
     ASTNode parseExpr() {
         import jitlang.ast: BinaryExpression;
@@ -224,7 +267,12 @@ struct Parser {
     }
 
     static bool isAlpha(char c) @safe @nogc pure nothrow {
-        return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
+        static import std.ascii;
+        return std.ascii.isAlpha(c);
     }
 
+    static bool isAlphaNumeric(char c) @safe @nogc pure nothrow {
+        static import std.ascii;
+        return std.ascii.isAlphaNum(c);
+    }
 }
