@@ -13,7 +13,18 @@ class ASTNode {
     abstract void accept(ASTVisitor visitor) const;
 
     override string toString() @safe pure scope const {
-        assert(0);
+        return toStringImpl(0);
+    }
+
+    protected string toStringImpl(int depth) const @safe pure scope {
+        assert(0, "This method should be overridden in subclasses.");
+        return "";
+    }
+
+    protected static string indent(int depth) @trusted pure scope {
+        auto ret = new char[depth* 4];
+        ret[] = ' ';
+        return cast(typeof(return)) ret;
     }
 
     bool isFunction() @safe @nogc pure scope nothrow const {
@@ -33,9 +44,12 @@ class Module: ASTNode {
         visitor.visit(this);
     }
 
-    override string toString() @safe pure scope const {
-        import std.conv: text;
-        return text(nodes);
+    override string toStringImpl(int depth) const @safe pure scope {
+        string repr = indent(depth) ~ "Module:\n";
+        foreach (node; nodes) {
+            repr ~= node.toStringImpl(depth + 1) ~ "\n";
+        }
+        return repr;
     }
 }
 
@@ -50,9 +64,9 @@ class Literal : ASTNode {
         visitor.visit(this);
     }
 
-    override string toString() @safe pure scope const {
+    override protected string toStringImpl(int depth) const @safe pure scope {
         import std.conv: text;
-        return text("IntLiteral(", value, ")");
+        return indent(depth) ~ "Literal: " ~ value.text;
     }
 }
 
@@ -80,17 +94,24 @@ class BinaryExpression : ASTNode {
         visitor.visit(this);
     }
 
-    override string toString() @safe pure scope const {
-        import std.conv: text;
-        return text("BinExp(", op, ", ", left, ", ", right, ")");
+  override protected string toStringImpl(int depth) const @safe pure scope {
+      import std.conv: text;
+      return text(indent(depth), "BinaryExpression: ", op, "\n",
+                  left.toStringImpl(depth + 1), "\n",
+                  right.toStringImpl(depth + 1));
     }
 }
 
 abstract class Type {
+    override string toString() @safe pure scope const {
+        assert(0);
+    }
 }
 
 class U32: Type {
-
+    override string toString() const @safe @nogc pure scope {
+        return "u32";
+    }
 }
 
 class Array: Type {
@@ -98,6 +119,11 @@ class Array: Type {
 
     this(Type element) {
         this.element = element;
+    }
+
+    override string toString() const @safe pure scope {
+        import std.conv: text;
+        return text(`[`, element, `]`);
     }
 }
 
@@ -128,9 +154,15 @@ class Function : ASTNode {
         visitor.visit(this);
     }
 
-    override string toString() @safe pure scope const {
-        import std.conv: text;
-        return text("Function ", name, " (", parameters, ") => ", body);
+    override string toStringImpl(int depth) const @safe pure scope {
+        string repr = indent(depth) ~ "Function " ~ name ~ ":\n";
+        repr ~= indent(depth + 1) ~ "Parameters:\n";
+        foreach (param; parameters) {
+            repr ~= indent(depth + 2) ~ param.name ~ ": " ~ param.type.toString() ~ "\n";
+        }
+        repr ~= indent(depth + 1) ~ "Return Type: " ~ returnType.toString() ~ "\n";
+        repr ~= indent(depth + 1) ~ "Body:\n" ~ body.toStringImpl(depth + 2);
+        return repr;
     }
 }
 
@@ -145,9 +177,9 @@ class Identifier : ASTNode {
         visitor.visit(this);
     }
 
-    override string toString() @safe pure scope const {
+    override protected string toStringImpl(int depth) const @safe pure scope {
         import std.conv: text;
-        return text("Identifier(", name, ")");
+        return text(indent(depth), "Identifier: ", name);
     }
 }
 
@@ -164,8 +196,8 @@ class FunctionCall : ASTNode {
         visitor.visit(this);
     }
 
-    override string toString() @safe pure scope const {
+    override string toStringImpl(int depth) @safe pure scope const {
         import std.conv: text;
-        return text(`FunctionCall(`, name, `, `, args, `)`);
+        return text(indent(depth), `FunctionCall(`, name, `, `, args, `)`);
     }
 }

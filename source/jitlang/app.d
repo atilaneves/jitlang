@@ -20,7 +20,9 @@ void run(string[] args) {
     const module_ = Parser(source).parse;
     stdout.log("Parsed source file");
     notLog(module_);
+    stdout.log("Printed");
 
+    stdout.log("Creating JIT compiler");
     auto compiler = new JITCompiler;
     stdout.log("Compiling...");
     compiler.visit(module_);

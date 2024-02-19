@@ -13,7 +13,7 @@ final class JITCompiler: imported!"jitlang.ast".ASTVisitor {
 
     this(string name = null) {
         import std.string: toStringz;
-        init_jit(name.toStringz);
+        //init_jit(name.toStringz); // needed for disassembly
         newState;
     }
 
@@ -48,7 +48,7 @@ final class JITCompiler: imported!"jitlang.ast".ASTVisitor {
             enforce(symbol, "JIT compilation failed for function `" ~ function_.name ~ `"`);
             symbols[function_.name] = symbol;
             _jit_clear_state(_jit);
-            //_jit_disassemble(_jit);
+            //_jit_disassemble(_jit); // needs init above
             newState;
         }
 
