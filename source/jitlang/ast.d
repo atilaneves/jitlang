@@ -216,12 +216,16 @@ class ArrayLiteral : ASTNode {
     }
 
     override protected string toStringImpl(int depth) const @safe pure scope {
-        import std.algorithm: map;
-        import std.array: join;
+        import std.algorithm: map, joiner;
         import std.conv: text;
 
-        string elemsRepr = elements.map!(e => e.toStringImpl(depth + 1)).join(",\n");
-        return text(indent(depth), "ArrayLiteral: [\n", elemsRepr, "\n", indent(depth), "]");
+        return text(
+            indent(depth),
+            "ArrayLiteral: [\n",
+            elements.map!(e => e.toStringImpl(depth + 4)).joiner(",\n"),
+            "\n",
+            indent(depth), "]",
+        );
     }
 }
 
