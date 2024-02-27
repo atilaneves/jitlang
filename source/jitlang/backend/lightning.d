@@ -44,7 +44,7 @@ final class JITCompiler: imported!"jitlang.ast".ASTVisitor {
 
         foreach(function_; functions.save) {
             function_.accept(this);
-            auto symbol =  _jit_emit(_jit);
+            auto symbol = _jit_emit(_jit);
             enforce(symbol, "JIT compilation failed for function `" ~ function_.name ~ `"`);
             symbols[function_.name] = symbol;
             _jit_clear_state(_jit);
