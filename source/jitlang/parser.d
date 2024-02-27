@@ -174,7 +174,8 @@ struct Parser {
     }
 
     ASTNode parseFactor() {
-        import jitlang.ast: Literal, Identifier, FunctionCall, ArrayLiteral;
+        import jitlang.ast: Literal, Identifier, FunctionCall, ArrayLiteral, ArrayIndexing;
+        import std.exception: enforce;
 
         skipWhitespace();
         if (pos >= input.length) error("Unexpected end of input");
@@ -203,7 +204,7 @@ struct Parser {
             while (pos < input.length && isDigit(input[pos])) pos++;
             return new Literal(to!int(input[start .. pos]));
         }
-        // Handle function calls
+        // Handle function calls and array indexing
         else if (isAlpha(input[pos])) {
             size_t start = pos;
             while (pos < input.length && (isAlpha(input[pos]) || isDigit(input[pos]))) pos++;
@@ -217,6 +218,14 @@ struct Parser {
                 skipWhitespace();
                 // no need to skip closing paren since done in `parseArguments`
                 return new FunctionCall(name, args);
+            } else if (pos < input.length && input[pos] == '[') {
+                pos++; // Skip '['
+                auto index = parseExpr;
+                skipWhitespace();
+                enforce(input[pos] == ']', "Expected `]`, input: ", input[pos..$]);
+                ++pos; // skip ']';
+                skipWhitespace;
+                return new ArrayIndexing(name, index);
             } else {
                 return new Identifier(name);
             }

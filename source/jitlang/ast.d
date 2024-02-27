@@ -226,10 +226,10 @@ class ArrayLiteral : ASTNode {
 }
 
 class ArrayIndexing : ASTNode {
-    ASTNode array;
+    string array;
     ASTNode index;
 
-    this(ASTNode array, ASTNode index) {
+    this(string array, ASTNode index) {
         this.array = array;
         this.index = index;
     }
@@ -241,7 +241,7 @@ class ArrayIndexing : ASTNode {
     override protected string toStringImpl(int depth) const @safe pure scope {
         import std.conv: text;
         return text(indent(depth), "ArrayIndexing:\n",
-                    array.toStringImpl(depth + 1), "\n",
+                    indent(depth + 1), "identifier: ", array, "\n",
                     indent(depth + 1), "Index:\n",
                     index.toStringImpl(depth + 2));
     }
