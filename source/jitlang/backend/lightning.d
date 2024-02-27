@@ -139,7 +139,27 @@ final class JITCompiler: imported!"jitlang.ast".ASTVisitor {
     }
 
     void visit(in ArrayLiteral arrayLiteral) {
-        throw new Exception("Not supported yet");
+        import core.stdc.stdlib: malloc;
+
+        // FIXME: get rid of the casts
+
+        _jit_prepare(_jit);
+        const memLength = cast(int) (arrayLiteral.elements.length * int.sizeof);
+        pushargi(memLength);
+        _jit_finishi(_jit, &malloc);
+
+        movr(V0, R0); // ptr
+        movi(V1, cast(int) arrayLiteral.elements.length); // length
+
+        foreach(i, element; arrayLiteral.elements) {
+            element.accept(this);
+            // Calculate the address for the current element (V2 + i * 4) and store the value
+            addi(V3, V0, cast(int)(i * int.sizeof)); // V3 = address of the ith element
+            str(V3, R0); // Store the value in the array
+        }
+
+        movr(R0, V0); // ptr
+        movr(R1, V1); // length
     }
 
     void visit(in ArrayIndexing arrayIndex) {

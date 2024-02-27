@@ -10,6 +10,7 @@ const jit_code_t R2 = JIT_R2;
 const jit_code_t V0 = JIT_V0; // callee-saved (persist across calls)
 const jit_code_t V1 = JIT_V1;
 const jit_code_t V2 = JIT_V2;
+const jit_code_t V3 = JIT_V3;
 const jit_code_t FP = JIT_FP;
 
 // copied from the header (sigh)
@@ -25,6 +26,10 @@ int addr(int u, int v, int w) {
     return jit_addr(u, v, w);
 }
 
+int addi(int u, int v, int w) {
+    return jit_addi(u, v, w);
+}
+
 int subr(int u, int v, int w) {
     return jit_subr(u, v, w);
 }
@@ -35,6 +40,10 @@ int mulr(int u, int v, int w) {
 
 int divr(int u, int v, int w) {
     return jit_divr(u, v, w);
+}
+
+int str(int u, int v) {
+    return jit_str(u, v);
 }
 
 int stxi_i(int u, int v, int w) {
@@ -55,6 +64,10 @@ int rshr(int u, int v, int w) {
 
 void pushargr(int u) {
     jit_pushargr(u);
+}
+
+void pushargi(int u) {
+    jit_pushargi(u);
 }
 
 jit_node_t* arg() {
