@@ -38,6 +38,10 @@ int mulr(int u, int v, int w) {
     return jit_mulr(u, v, w);
 }
 
+int muli(int u, int v, int w) {
+    return jit_muli(u, v, w);
+}
+
 int divr(int u, int v, int w) {
     return jit_divr(u, v, w);
 }
@@ -48,6 +52,10 @@ int str(int u, int v) {
 
 int stxi_i(int u, int v, int w) {
     return jit_stxi_i(u, v, w);
+}
+
+int ldr(int u, int v) {
+    return jit_ldr(u, v);
 }
 
 int ldxi_i(int u, int v, int w) {

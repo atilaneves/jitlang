@@ -163,7 +163,15 @@ final class JITCompiler: imported!"jitlang.ast".ASTVisitor {
     }
 
     void visit(in ArrayIndexing arrayIndex) {
-        throw new Exception("Not supported yet");
+        // FIXME: fetch the pointer from the indentifier
+        // HACK: assume R0/R1 contain the array pointer/address
+        movr(V0, R0);
+        movr(V1, R1);
+        //muli(V1, R1, cast(int) int.sizeof);
+        arrayIndex.index.accept(this); // R0: index
+        muli(R0, R0, cast(int) int.sizeof);
+        addr(V3, V0, R0); // V3 is ptr + index
+        ldr(R0, V3);
     }
 
 private:

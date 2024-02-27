@@ -1,2 +1,2 @@
-fn first(a: [u32]): u32 => a[0]
+fn first(a: [u32]): u32 => a[1]
 fn main(): u32 => first([2, 3, 4])
