@@ -128,7 +128,7 @@ struct Parser {
             if (pos >= input.length) break;
 
             char op = input[pos];
-            if (!op.among('+', '-', '|')) break;
+            if (!op.among('+', '-', '|', '&')) break;
 
             pos++;
             auto right = parseTerm();
@@ -142,6 +142,8 @@ struct Parser {
                         return BinaryExpression.Op.Sub;
                     case '|':
                         return BinaryExpression.Op.Or;
+                    case '&':
+                        return BinaryExpression.Op.And;
                 }
             }
             left = new BinaryExpression(opEnum, left, right);

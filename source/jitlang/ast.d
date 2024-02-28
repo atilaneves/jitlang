@@ -81,6 +81,7 @@ class BinaryExpression : ASTNode {
         ShiftLeft,
         ShiftRight,
         Or,
+        And,
     }
 
     Op op;

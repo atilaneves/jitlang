@@ -132,6 +132,9 @@ final class JITCompiler: imported!"jitlang.ast".ASTVisitor {
             case Or:
                 orr(R0, V0, V1);
                 break;
+            case And:
+                andr(R0, V0, V1);
+                break;
         }
     }
 

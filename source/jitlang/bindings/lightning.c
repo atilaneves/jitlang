@@ -50,6 +50,10 @@ int orr(int u, int v, int w) {
     return jit_orr(u, v, w);
 }
 
+int andr(int u, int v, int w) {
+    return jit_andr(u, v, w);
+}
+
 int str(int u, int v) {
     return jit_str(u, v);
 }
