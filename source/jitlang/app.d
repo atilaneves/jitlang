@@ -5,37 +5,21 @@ private:
 public void run(string[] args) {
     import jitlang.parser: Parser;
     import jitlang.backend.lightning: JITCompiler;
-    import jitlang.io: log;
-    import std.stdio: stdout;
+    import jitlang.io: log, sink;
     import std.file: readText;
 
     scope(exit)
-        stdout.log("Finished");
+        sink.log("Finished");
 
-    stdout.log("Start");
+    sink.log("Start");
 
     const options = Options(args);
-    stdout.log("Source file: ", options.fileName);
+    sink.log("Source file: ", options.fileName);
     const source = readText(options.fileName);
-    stdout.log("Read source file");
+    sink.log("Read source file");
 
-    const module_ = Parser(source).parse;
-    stdout.log("Parsed source file");
-    notLog(module_);
-    stdout.log("Printed");
-
-    stdout.log("Creating JIT compiler");
-    auto compiler = new JITCompiler;
-    stdout.log("Compiling...");
-    compiler.visit(module_);
-    stdout.log("Compiled");
-
-    if("main" !in compiler.symbols)
-        throw new Exception("No main function");
-
-    alias MainFunc = extern(C) int function(int);
-    auto main = cast(MainFunc) compiler.symbols["main"];
-    stdout.log("Main: ", main(options.arg));
+    auto main = mainFunc(source);
+    sink.log("Main: ", main(options.arg));
 }
 
 alias MainFunc = extern(C) int function(int);
