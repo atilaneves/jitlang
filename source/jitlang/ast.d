@@ -80,6 +80,7 @@ class BinaryExpression : ASTNode {
         Div,
         ShiftLeft,
         ShiftRight,
+        Or,
     }
 
     Op op;

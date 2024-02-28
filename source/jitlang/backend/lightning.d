@@ -129,6 +129,9 @@ final class JITCompiler: imported!"jitlang.ast".ASTVisitor {
             case ShiftRight:
                 rshr(R0, V0, V1);
                 break;
+            case Or:
+                orr(R0, V0, V1);
+                break;
         }
     }
 

@@ -119,6 +119,7 @@ struct Parser {
 
     ASTNode parseExpr() {
         import jitlang.ast: BinaryExpression;
+        import std.algorithm: among;
 
         auto left = parseTerm();
 
@@ -127,15 +128,23 @@ struct Parser {
             if (pos >= input.length) break;
 
             char op = input[pos];
-            if (op != '+' && op != '-') break;
+            if (!op.among('+', '-', '|')) break;
 
             pos++;
             auto right = parseTerm();
-            left = new BinaryExpression(
-                op == '+' ? BinaryExpression.Op.Add : BinaryExpression.Op.Sub,
-                left,
-                right,
-            );
+            auto opEnum() {
+                switch(op) {
+                    default:
+                        assert(0);
+                    case '+':
+                        return BinaryExpression.Op.Add;
+                    case '-':
+                        return BinaryExpression.Op.Sub;
+                    case '|':
+                        return BinaryExpression.Op.Or;
+                }
+            }
+            left = new BinaryExpression(opEnum, left, right);
         }
         return left;
     }

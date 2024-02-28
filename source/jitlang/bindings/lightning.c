@@ -46,6 +46,10 @@ int divr(int u, int v, int w) {
     return jit_divr(u, v, w);
 }
 
+int orr(int u, int v, int w) {
+    return jit_orr(u, v, w);
+}
+
 int str(int u, int v) {
     return jit_str(u, v);
 }
