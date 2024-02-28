@@ -10,6 +10,7 @@ final class JITCompiler: imported!"jitlang.ast".ASTVisitor {
     jit_state_t* _jit;
     int stackPtr;
     void*[string] symbols;
+    typeof(arg())[string] args;
 
     this(string name = null) {
         import std.string: toStringz;
@@ -57,6 +58,9 @@ final class JITCompiler: imported!"jitlang.ast".ASTVisitor {
     void visit(in Function func) {
         _jit_prolog(_jit);
         stackPtr = _jit_allocai(_jit, 1024 * int.sizeof);
+
+        foreach(param; func.parameters)
+            args[param.name] = arg();
 
         func.body.accept(this);
 
@@ -131,11 +135,8 @@ final class JITCompiler: imported!"jitlang.ast".ASTVisitor {
         movi(R0, lit.value);
     }
 
-    void visit(in Identifier) {
-        // FIXME: this assumes there's only one parameter and that the
-        // value is in R0
-        auto a = arg();
-        getarg(R0, a);
+    void visit(in Identifier id) {
+        getarg(R0, args[id.name]);
     }
 
     void visit(in ArrayLiteral arrayLiteral) {

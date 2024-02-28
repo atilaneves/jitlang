@@ -1,0 +1,2 @@
+fn snd(x: u32, y: u32): u32 => y
+fn main(): u32 => snd(2, 3)
