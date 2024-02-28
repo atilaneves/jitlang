@@ -59,6 +59,7 @@ final class JITCompiler: imported!"jitlang.ast".ASTVisitor {
         _jit_prolog(_jit);
         stackPtr = _jit_allocai(_jit, 1024 * int.sizeof);
 
+        scope(exit) args = args.init;
         foreach(param; func.parameters)
             args[param.name] = arg();
 
