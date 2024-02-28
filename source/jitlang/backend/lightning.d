@@ -161,7 +161,7 @@ final class JITCompiler: imported!"jitlang.ast".ASTVisitor {
         }
 
         movr(R0, V0); // ptr
-        movr(R1, V1); // length
+        movr(R1, V1); // length (FIXME: ignored everywhere)
     }
 
     void visit(in ArrayIndexing arrayIndex) {
