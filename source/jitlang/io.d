@@ -25,3 +25,19 @@ private auto sinceStart() @safe {
     import std.datetime: Clock;
     return (Clock.currTime - gStartTime).total!"usecs";
 }
+
+auto sink() {
+    import std.stdio: stdout;
+
+    version(unittest) {
+        static struct UnitThreadedSink {
+            void flush() {}
+            void writeln(A...)(auto ref A args) {
+                import unit_threaded.io;
+                writelnUt(args);
+            }
+        }
+        return stdout;
+    } else
+        return stdout;
+}

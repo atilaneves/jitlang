@@ -1,6 +1,8 @@
 module jitlang.app;
 
-void run(string[] args) {
+private:
+
+public void run(string[] args) {
     import jitlang.parser: Parser;
     import jitlang.backend.lightning: JITCompiler;
     import jitlang.io: log;
@@ -34,6 +36,30 @@ void run(string[] args) {
     alias MainFunc = extern(C) int function(int);
     auto main = cast(MainFunc) compiler.symbols["main"];
     stdout.log("Main: ", main(options.arg));
+}
+
+alias MainFunc = extern(C) int function(int);
+
+public MainFunc mainFunc(in string source) {
+    import jitlang.parser: Parser;
+    import jitlang.backend.lightning: JITCompiler;
+    import jitlang.io: log, sink;
+
+    const module_ = Parser(source).parse;
+    sink.log("Parsed source");
+    notLog(module_);
+    sink.log("Printed");
+
+    sink.log("Creating JIT compiler");
+    auto compiler = new JITCompiler;
+    sink.log("Compiling...");
+    compiler.visit(module_);
+    sink.log("Compiled");
+
+    if("main" !in compiler.symbols)
+        throw new Exception("No main function");
+
+    return cast(MainFunc) compiler.symbols["main"];
 }
 
 private struct Options {

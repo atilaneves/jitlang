@@ -1,2 +1,7 @@
 *.o
 jit
+.ninja*
+.reggae
+*.ninja
+compile_commands.json
+ut

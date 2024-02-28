@@ -1,0 +1,19 @@
+name "jit"
+libs "lightning"
+sourceFiles "source/jitlang/bindings/lightning.c"
+
+configuration "default" {
+    targetType "executable"
+}
+
+configuration "unittest" {
+    targetName "ut"
+    sourcePaths "source" "tests"
+    importPaths "source" "tests"
+    excludedSourceFiles "source/main.d"
+
+    versions "unitUnthreaded"
+
+    dependency "unit-threaded" version="*"
+    dependency "unit-threaded:autorunner" version="*"
+}
