@@ -5,21 +5,21 @@ private:
 public void run(string[] args) {
     import jitlang.parser: Parser;
     import jitlang.backend.lightning: JITCompiler;
-    import jitlang.io: log, sink;
+    import jitlang.io: log;
     import std.file: readText;
 
     scope(exit)
-        sink.log("Finished");
+        log("Finished");
 
-    sink.log("Start");
+    log("Start");
 
     const options = Options(args);
-    sink.log("Source file: ", options.fileName);
+    log("Source file: ", options.fileName);
     const source = readText(options.fileName);
-    sink.log("Read source file");
+    log("Read source file");
 
     auto main = mainFunc(source);
-    sink.log("Main: ", main(options.arg));
+    log("Main: ", main(options.arg));
 }
 
 alias MainFunc = extern(C) int function(int);
@@ -27,18 +27,18 @@ alias MainFunc = extern(C) int function(int);
 public MainFunc mainFunc(in string source) {
     import jitlang.parser: Parser;
     import jitlang.backend.lightning: JITCompiler;
-    import jitlang.io: log, sink;
+    import jitlang.io: log;
 
     const module_ = Parser(source).parse;
-    sink.log("Parsed source");
+    log("Parsed source");
     notLog(module_);
-    sink.log("Printed");
+    log("Printed");
 
-    sink.log("Creating JIT compiler");
+    log("Creating JIT compiler");
     auto compiler = new JITCompiler;
-    sink.log("Compiling...");
+    log("Compiling...");
     compiler.visit(module_);
-    sink.log("Compiled");
+    log("Compiled");
 
     if("main" !in compiler.symbols)
         throw new Exception("No main function");
@@ -68,6 +68,10 @@ private struct Options {
 }
 
 private void notLog(A...)(auto ref A args) {
-    import std.stdio: writeln;
+    version (unittest) {
+        import unit_threaded: writelnUt;
+        alias writeln = writelnUt;
+    } else
+          import std.stdio: writeln;
     writeln("\n", args, "\n");
 }

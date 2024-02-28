@@ -9,10 +9,15 @@ shared static this() {
 }
 
 
-void log(O, T...)(auto ref O output, auto ref T args) {
+void log(T...)(auto ref T args) {
     import std.functional: forward;
-    output.writeln("[JIT]  ", usSinceStartString, "us  ", forward!args);
-    output.flush;
+    version(unittest) {
+        import unit_threaded;
+        writelnUt("[JIT]  ", usSinceStartString, "us  ", forward!args);
+    } else {
+        import std.stdio: writeln;
+        writeln("[JIT]  ", usSinceStartString, "us  ", forward!args);
+    }
 }
 
 private string usSinceStartString() @safe {
@@ -24,20 +29,4 @@ private string usSinceStartString() @safe {
 private auto sinceStart() @safe {
     import std.datetime: Clock;
     return (Clock.currTime - gStartTime).total!"usecs";
-}
-
-auto sink() {
-    import std.stdio: stdout;
-
-    version(unittest) {
-        static struct UnitThreadedSink {
-            void flush() {}
-            void writeln(A...)(auto ref A args) {
-                import unit_threaded.io;
-                writelnUt(args);
-            }
-        }
-        return stdout;
-    } else
-        return stdout;
 }
